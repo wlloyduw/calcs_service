@@ -9,8 +9,8 @@
 	
 	"payload": {
 		"threads": 2,
-		"calcs": 2000000,
-		"loops": 25,
+		"calcs": 50000,
+		"loops": 1000,
 		"sleep": 0
 	}
 }
