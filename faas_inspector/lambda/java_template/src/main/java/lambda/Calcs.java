@@ -22,6 +22,9 @@ public class Calcs implements RequestHandler<Request, Response>
     static String CONTAINER_ID = "/tmp/container-id";
     static Charset CHARSET = Charset.forName("US-ASCII");
     
+    long[] operand_a;
+    long[] operand_b;
+    long[] operand_c;
     
     // Lambda Function Handler
     public Response handleRequest(Request request, Context context) {
@@ -41,6 +44,10 @@ public class Calcs implements RequestHandler<Request, Response>
         int calcs = request.getCalcs();
         int sleep = request.getSleep();
         int loops = request.getLoops();
+        
+        operand_a = new long[calcs];
+        operand_b = new long[calcs];
+        operand_c = new long[calcs];
 
         if (loops>0)
         {
@@ -85,9 +92,6 @@ public class Calcs implements RequestHandler<Request, Response>
         // By not reusing the same variables in the calc, this should prevent
         // compiler optimization... Also each math operation should operate
         // on between operands in different memory locations.
-        long[] operand_a = new long[calcs];
-        long[] operand_b = new long[calcs];
-        long[] operand_c = new long[calcs];
         long mult;
         double div1;
         
