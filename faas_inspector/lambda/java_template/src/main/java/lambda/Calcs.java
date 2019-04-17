@@ -68,14 +68,14 @@ public class Calcs implements RequestHandler<Request, Response>
                 System.out.println("Sleep was interrupted - no calc mode...");
             }
         }
-        
+         
         
         //Print log information to the Lambda log as needed
-        //logger.log("log message...");
+        logger.log("log message...");
         
         // Set return result in Response class, class is marshalled into JSON
         r.setValue(hello);
-        
+        reg.setRuntime();
         return r;
     }
     
@@ -107,6 +107,15 @@ public class Calcs implements RequestHandler<Request, Response>
     // int main enables testing function from cmd line
     public static void main (String[] args)
     {
+        if ((args == null) || (args.length == 0))
+        {
+            System.out.println("Usage arguments:");
+            System.out.println("1 - number of calcs per loop and operand arraysize");
+            System.out.println("2 - sleep duration between loops in ms");
+            System.out.println("3 - number of loops");
+            return;
+        }
+        
         Context c = new Context() {
             @Override
             public String getAwsRequestId() {
@@ -176,12 +185,14 @@ public class Calcs implements RequestHandler<Request, Response>
         Request req = new Request();
         
         // Grab the name from the cmdline from arg 0
-        String name = (args.length > 0 ? args[0] : "");
+        int calcs = (args.length > 0 ? Integer.parseInt(args[0]) : 100000);
+        int sleep = (args.length > 1 ? Integer.parseInt(args[1]) : 0);
+        int loops = (args.length > 2 ? Integer.parseInt(args[2]) : 25);
         
         // Load the name into the request object
-        req.setCalcs(1000000);
-        req.setSleep(0);
-        req.setLoops(25);
+        req.setCalcs(calcs);
+        req.setSleep(sleep);
+        req.setLoops(loops);
 
         // Report name to stdout
         System.out.println("cmd-line calcs=" + req.getCalcs() + " sleep=" + req.getSleep() + " loops=" + req.getLoops());
