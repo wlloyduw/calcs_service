@@ -45,20 +45,32 @@ public class Hello implements RequestHandler<Request, HashMap<String, Object>> {
         return inspector.finish();
     }
 
+    /**
+     * Threads that does all of the math.
+     */
     private class calcThread implements Runnable {
 
         private final int calcs;
         private final int sleep;
         private final int loops;
+        
+        long[] operand_a;
+        long[] operand_b;
+        long[] operand_c;
 
         private calcThread(int calcs, int sleep, int loops) {
             this.calcs = calcs;
             this.sleep = sleep;
             this.loops = loops;
+            
+            this.operand_a = new long[calcs];
+            this.operand_b = new long[calcs];
+            this.operand_c = new long[calcs];
         }
 
         @Override
         public void run() {
+            
             if (loops > 0) {
                 for (int i = 0; i < loops; i++) {
                     randomMath(calcs);
@@ -82,9 +94,6 @@ public class Hello implements RequestHandler<Request, HashMap<String, Object>> {
             // By not reusing the same variables in the calc, this should prevent
             // compiler optimization... Also each math operation should operate
             // on between operands in different memory locations.
-            long[] operand_a = new long[calcs];
-            long[] operand_b = new long[calcs];
-            long[] operand_c = new long[calcs];
             long mult;
             double div1;
 
