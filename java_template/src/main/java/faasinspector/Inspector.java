@@ -30,7 +30,6 @@ public class Inspector {
      * attributes: Used to store information collected by each function.
      */
     public Inspector() {
-
         startTime = System.currentTimeMillis();
         attributes = new HashMap<>();
 
@@ -179,10 +178,14 @@ public class Inspector {
      * Collect information about the linux kernel.
      *
      * linuxVersion: The version of the linux kernel.
+     * hostname:     The host name of the system.
      */
     public void inspectLinux() {
         String linuxVersion = runCommand(new String[] {"uname", "-v"}).trim();
         attributes.put("linuxVersion", linuxVersion);
+        
+        String hostname = runCommand(new String[] {"hostname"}).trim();
+        attributes.put("hostname", hostname);
     }
 
     /**
@@ -204,6 +207,16 @@ public class Inspector {
      */
     public void addAttribute(String key, Object value) {
         attributes.put(key, value);
+    }
+    
+    /**
+     * Gets a custom attribute from the attribute list.
+     * 
+     * @param key The key of the attribute.
+     * @return The object itself. Cast into appropriate data type.
+     */
+    public Object getAttribute(String key) {
+        return attributes.get(key);
     }
 
     /**

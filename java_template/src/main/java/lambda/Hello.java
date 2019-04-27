@@ -27,6 +27,7 @@ public class Hello implements RequestHandler<Request, HashMap<String, Object>> {
         Inspector inspector = new Inspector();
         inspector.inspectCPU();
         inspector.inspectContainer();
+        inspector.inspectLinux();
         inspector.addTimeStamp("frameworkRuntime");
         
         int threads = request.getThreads() - 1;
