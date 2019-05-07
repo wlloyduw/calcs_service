@@ -25,9 +25,7 @@ public class Hello implements RequestHandler<Request, HashMap<String, Object>> {
 
         //Collect data
         Inspector inspector = new Inspector();
-        inspector.inspectCPU();
-        inspector.inspectContainer();
-        inspector.inspectLinux();
+        inspector.inspectAll();
         inspector.addTimeStamp("frameworkRuntime");
         
         int threads = request.getThreads() - 1;
@@ -43,6 +41,7 @@ public class Hello implements RequestHandler<Request, HashMap<String, Object>> {
         //Use this thread to do some math too.
         new calcThread(calcs, sleep, loops).run();
         
+        inspector.inspectCPUDelta()
         return inspector.finish();
     }
 
