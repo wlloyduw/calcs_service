@@ -41,7 +41,7 @@ public class Hello implements RequestHandler<Request, HashMap<String, Object>> {
         //Use this thread to do some math too.
         new calcThread(calcs, sleep, loops).run();
         
-        inspector.inspectCPUDelta()
+        inspector.inspectCPUDelta();
         return inspector.finish();
     }
 
