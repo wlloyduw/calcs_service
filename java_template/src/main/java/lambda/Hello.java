@@ -42,7 +42,7 @@ public class Hello implements RequestHandler<Request, HashMap<String, Object>> {
         calcThread calculator = new calcThread(calcs, sleep, loops);
         calculator.run();
         
-        inspector.addAttribute("FinalSum", calculator.finalValue);
+        inspector.addAttribute("finalCalc", calculator.lastCalc);
         
         inspector.inspectCPUDelta();
         return inspector.finish();
@@ -61,7 +61,7 @@ public class Hello implements RequestHandler<Request, HashMap<String, Object>> {
         long[] operand_b;
         long[] operand_c;
         
-        private long finalValue = 0;
+        private long lastCalc = 0;
         
         //Set seed so random always returns the same set of values.
         Random rand = new Random(42);
@@ -81,7 +81,7 @@ public class Hello implements RequestHandler<Request, HashMap<String, Object>> {
             
             if (loops > 0) {
                 for (int i = 0; i < loops; i++) {
-                    finalValue += randomMath(calcs);
+                    lastCalc = (long) randomMath(calcs);
                     try {
                         Thread.sleep(sleep);
                     } catch (InterruptedException ie) {
@@ -102,8 +102,7 @@ public class Hello implements RequestHandler<Request, HashMap<String, Object>> {
             // compiler optimization... Also each math operation should operate
             // on between operands in different memory locations.
             long mult;
-            double div1;
-            double sum = 0;
+            double div1 = 0;
 
             for (int i = 0; i < calcs; i++) {
                 // By not using sequential locations in the array, we should 
@@ -114,9 +113,8 @@ public class Hello implements RequestHandler<Request, HashMap<String, Object>> {
                 operand_c[j] = rand.nextInt(99999);
                 mult = operand_a[j] * operand_b[j];
                 div1 = (double) mult / (double) operand_c[j];
-                sum += div1;
             }
-            return sum;
+            return div1;
         }
     }
 }
