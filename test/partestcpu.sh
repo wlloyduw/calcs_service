@@ -59,13 +59,14 @@ callservice() {
     ####################################
     # Uncomment for AWS Lambda CLI function invocation with $function variable
     ####################################
-    output=`aws lambda invoke --invocation-type RequestResponse --function-name $function --region us-east-1 --payload $json /dev/stdout | head -n 1 | head -c -2 ; echo`
-    
+    #output=`aws lambda invoke --invocation-type RequestResponse --function-name $function --region us-east-1 --payload $json /dev/stdout | head -n 1 | head -c -2 ; echo`
+
     ####################################
     # Uncomment for Google Cloud CLI function invocation with $function variable
     ####################################
-    #output=`gcloud functions call $function --data $json | head -n 1 | head -c -2 ; echo`
-    
+    output=`gcloud functions call $function --data $json | head -n 1 | head -c -2 ; echo`
+    echo Response: $output
+
     ####################################
     # Uncomment for IBM Cloud CLI function invocation with $function variable
     ####################################
@@ -83,7 +84,7 @@ callservice() {
 
     # parsing when /proc/cpuinfo is requested
     uuid=`echo $output | jq '.uuid'`
-    cpuusr=`echo $output | jq '.cpuUsr'`  
+    cpuusr=`echo $output | jq '.cpuUsr'`
     cpukrn=`echo $output | jq '.cpuKrn'`
     pid=`echo $output | jq '.pid'`
     cputype=`echo $output | jq '.cpuType'`
@@ -92,7 +93,7 @@ callservice() {
     vuptime=`echo $output | jq '.vmuptime'`
     newcont=`echo $output | jq '.newcontainer'`
     ssruntime=`echo $output | jq '.runtime'`
-    
+
     elapsedtime=`expr $time2 - $time1`
     sleeptime=`echo $onesecond - $elapsedtime | bc -l`
     latency=`echo $elapsedtime - $ssruntime | bc -l`
@@ -149,8 +150,8 @@ do
     latency=`echo $line | cut -d',' -f 4`
     host=`echo $line | cut -d',' -f 5`
     isnewcont=`echo $line | cut -d',' -f 6`
-    cputype=`echo $line | cut -d',' -f 7` 
-    cpusteal=`echo $line | cut -d',' -f 8` 
+    cputype=`echo $line | cut -d',' -f 7`
+    cpusteal=`echo $line | cut -d',' -f 8`
     alltimes=`expr $alltimes + $time`
     allsstimes=`expr $allsstimes + $sstime`
     alllatency=`expr $alllatency + $latency`
@@ -247,13 +248,13 @@ if [[ ! -z $contreport && $contreport -eq 1 ]]
 then
   for ((i=0;i < ${#containers[@]};i++)) {
     echo "${containers[$i]}" >> .origcont
-  }  
+  }
 fi
 
 ## if state = 2 compare against file to obtain total count of recycled containers used
 if [[ ! -z $contreport && $contreport -eq 2 ]]
 then
-  for ((i=0;i < ${#containers[@]};i++)) 
+  for ((i=0;i < ${#containers[@]};i++))
   {
     # read the origcont file and compare current containers to old containers in .origcont
     # increment a counter every time we find a recycled container
@@ -270,7 +271,7 @@ then
       fi
     done < "$filename"
     # if breakoutcont==0 then:
-    # add container to newcont file if its not already there... (function call) 
+    # add container to newcont file if its not already there... (function call)
   }
 fi
 
@@ -299,8 +300,8 @@ for ((i=0;i < ${#containers[@]};i++)) {
   ssavg=`printf '%.*f\n' 0 $ssavg`
   latencyavg=`echo ${clatency[$i]} / ${cuses[$i]} | bc -l`
   latencyavg=`printf '%.*f\n' 0 $latencyavg`
-  stdiff=`echo ${cuses[$i]} - $runspercont | bc -l` 
-  stdiffsq=`echo "$stdiff * $stdiff" | bc -l` 
+  stdiff=`echo ${cuses[$i]} - $runspercont | bc -l`
+  stdiffsq=`echo "$stdiff * $stdiff" | bc -l`
   total=`echo $total + $stdiffsq | bc -l`
   echo "${containers[$i]},${chosts[$i]},${ccputype[$i]},${cuses[$i]},${ctimes[$i]},$avg,$ssavg,$latencyavg,$stdiffsq"
 }
@@ -320,7 +321,7 @@ echo "host,host_cpu,host_up_time,uses,containers,totaltime,avgruntime_host,avgss
 total=0
 if [[ ! -z $vmreport && $vmreport -eq 1 ]]
 then
-  rm -f .origvm 
+  rm -f .origvm
 fi
 
 # Loop through list of hosts - generate summary data
@@ -333,8 +334,8 @@ for ((i=0;i < ${#hosts[@]};i++)) {
   avgcpusteal=`printf '%.*f\n' 0 $avgcpusteal`
   latencyavg=`echo ${hlatency[$i]} / ${huses[$i]} | bc -l`
   latencyavg=`printf '%.*f\n' 0 $latencyavg`
-  stdiff=`echo ${huses[$i]} - $runsperhost | bc -l` 
-  stdiffsq=`echo "$stdiff * $stdiff" | bc -l` 
+  stdiff=`echo ${huses[$i]} - $runsperhost | bc -l`
+  stdiffsq=`echo "$stdiff * $stdiff" | bc -l`
   total=`echo $total + $stdiffsq | bc -l`
   ccount=0
   uptime=`echo $currtime - ${hosts[$i]} | bc -l`
@@ -343,16 +344,16 @@ for ((i=0;i < ${#hosts[@]};i++)) {
       then
           (( ccount ++ ))
       fi
-  } 
+  }
   echo "${hosts[$i]},${hcputype[$i]},$uptime,${huses[$i]},$ccount,${htimes[$i]},$avg,$ssavg,$latencyavg,$stdiffsq,$avgcpusteal"
 
   ##  Determine count of recycled hosts...
-  ## 
+  ##
   ##  Generate .origvm file to support determing infrastructure recycling stats
   ##
-  if [[ ! -z $vmreport && $vmreport -eq 1 ]] 
+  if [[ ! -z $vmreport && $vmreport -eq 1 ]]
   then
-    echo "${hosts[$i]}" >> .origvm 
+    echo "${hosts[$i]}" >> .origvm
   fi
   if [[ ! -z $vmreport && $vmreport -eq 2 ]]
   then
@@ -373,7 +374,7 @@ for ((i=0;i < ${#hosts[@]};i++)) {
       fi
     done < "$filename"
     # if breakoutvm==0 then:
-    # add vm to .newvm file if its not already there... (function call) 
+    # add vm to .newvm file if its not already there... (function call)
   fi
 }
 stdevhost=`echo $total / ${#hosts[@]} | bc -l`
@@ -403,7 +404,7 @@ for ((i=0;i < ${#cpuTypes[@]};i++)) {
 # Generate CSV output - report summary, final data
 #########################################################################################################################################################
 #
-# 
+#
 #
 echo "containers,newcontainers,recycont,hosts,recyvms,avgruntime,avgssruntime,avglatency,runs_per_container,runs_per_cont_stdev,runs_per_host,runs_per_host_stdev,totalcost"
 echo "${#containers[@]},$newconts,$recycont,${#hosts[@]},$recyvms,$avgtime,$avgsstime,$avglatency,$runspercont,$stdev,$runsperhost,$stdevhost,\$$totalcost"

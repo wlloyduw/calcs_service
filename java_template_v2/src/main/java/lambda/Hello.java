@@ -57,10 +57,6 @@ public class Hello implements RequestHandler<Request, HashMap<String, Object>> {
         private final int sleep;
         private final int loops;
         
-        long[] operand_a;
-        long[] operand_b;
-        long[] operand_c;
-        
         private long lastCalc = 0;
         
         //Set seed so random always returns the same set of values.
@@ -70,10 +66,6 @@ public class Hello implements RequestHandler<Request, HashMap<String, Object>> {
             this.calcs = calcs;
             this.sleep = sleep;
             this.loops = loops;
-            
-            this.operand_a = new long[calcs];
-            this.operand_b = new long[calcs];
-            this.operand_c = new long[calcs];
         }
 
         @Override
@@ -104,15 +96,19 @@ public class Hello implements RequestHandler<Request, HashMap<String, Object>> {
             long mult;
             double div1 = 0;
 
+            int a, b, c;
+
             for (int i = 0; i < calcs; i++) {
                 // By not using sequential locations in the array, we should 
                 // reduce memory lookup efficiency
                 int j = rand.nextInt(calcs);
-                operand_a[j] = rand.nextInt(99999);
-                operand_b[j] = rand.nextInt(99999);
-                operand_c[j] = rand.nextInt(99999);
-                mult = operand_a[j] * operand_b[j];
-                div1 = (double) mult / (double) operand_c[j];
+
+                a = i + 75;
+                b = i + 256;
+                c = i + 45;
+
+                mult = a * b;
+                div1 = (double) mult / (double) c;
             }
             return div1;
         }
