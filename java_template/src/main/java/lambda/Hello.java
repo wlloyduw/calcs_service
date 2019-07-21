@@ -28,21 +28,24 @@ public class Hello implements RequestHandler<Request, HashMap<String, Object>> {
         inspector.inspectAll();
         inspector.addTimeStamp("frameworkRuntime");
         
-        int threads = request.getThreads() - 1;
+        int threads = request.getThreads();
         int calcs = request.getCalcs();
         int sleep = request.getSleep();
         int loops = request.getLoops();
+        int arraySize = request.getArraySize();
+
+        ArrayList<Thread> threadList = new ArrayList<>();
         
-        //Kick off secondary threads to process math.
-        for (int i = 0; i < threads - 1; i++) {
-            (new Thread(new calcThread(calcs, sleep, loops))).start();
+        //Create threads that will do math.
+        for (int i = 0; i < threads; i++) {
+            Thread t = new Thread(new calcThread(calcs, sleep, loops, arraySize));
+            t.start();
         }
-        
-        //Use this thread to do some math too.
-        calcThread calculator = new calcThread(calcs, sleep, loops);
-        calculator.run();
-        
-        inspector.addAttribute("finalCalc", calculator.lastCalc);
+
+        //Using this thread, wait for threads to finish.
+        for (Thread t : threadList) {
+            t.join();
+        }
         
         inspector.inspectCPUDelta();
         return inspector.finish();
@@ -56,6 +59,7 @@ public class Hello implements RequestHandler<Request, HashMap<String, Object>> {
         private final int calcs;
         private final int sleep;
         private final int loops;
+        private final int arraySize;
         
         long[] operand_a;
         long[] operand_b;
@@ -66,14 +70,15 @@ public class Hello implements RequestHandler<Request, HashMap<String, Object>> {
         //Set seed so random always returns the same set of values.
         Random rand = new Random(42);
 
-        private calcThread(int calcs, int sleep, int loops) {
+        private calcThread(int calcs, int sleep, int loops, int arraySize) {
             this.calcs = calcs;
             this.sleep = sleep;
             this.loops = loops;
+            this.arraySize = arraySize;
             
-            this.operand_a = new long[calcs];
-            this.operand_b = new long[calcs];
-            this.operand_c = new long[calcs];
+            this.operand_a = new long[arraySize];
+            this.operand_b = new long[arraySize];
+            this.operand_c = new long[arraySize];
         }
 
         @Override
@@ -82,11 +87,13 @@ public class Hello implements RequestHandler<Request, HashMap<String, Object>> {
             if (loops > 0) {
                 for (int i = 0; i < loops; i++) {
                     lastCalc = (long) randomMath(calcs);
-                    try {
-                        Thread.sleep(sleep);
-                    } catch (InterruptedException ie) {
-                        System.out.println("Sleep was interrupted - calc mode...");
-                    }
+                    if (sleep > 0) {
+                        try {
+                            Thread.sleep(sleep);
+                        } catch (InterruptedException ie) {
+                            System.out.println("Sleep was interrupted - calc mode...");
+                        }
+                    }   
                 }
             } else {
                 try {
@@ -107,7 +114,7 @@ public class Hello implements RequestHandler<Request, HashMap<String, Object>> {
             for (int i = 0; i < calcs; i++) {
                 // By not using sequential locations in the array, we should 
                 // reduce memory lookup efficiency
-                int j = rand.nextInt(calcs);
+                int j = rand.nextInt(arraySize);
                 operand_a[j] = rand.nextInt(99999);
                 operand_b[j] = rand.nextInt(99999);
                 operand_c[j] = rand.nextInt(99999);

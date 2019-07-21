@@ -10,11 +10,13 @@ public class Request {
     int calcs;
     int sleep;
     int loops;
+    int arraySize;
     
-    public Request(int calcs, int sleep, int loops) {
+    public Request(int calcs, int sleep, int loops, int arraySize) {
         this.calcs = calcs;
         this.sleep = sleep;
         this.loops = loops;
+        this.arraySize = arraySize;
     }
 
     public Request() {
@@ -35,6 +37,14 @@ public class Request {
 
     public void setCalcs(int calcs) {
         this.calcs = calcs;
+    }
+
+    public int getArraySize() {
+        return arraySize;
+    }
+
+    public void setArraySize(int arraySize) {
+        this.arraySize = arraySize;
     }
 
     public int getSleep() {
