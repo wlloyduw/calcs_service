@@ -2,7 +2,7 @@
 
 # Mutli-platform Publisher. Used to publish FaaS Inspector Java functions onto AWS Lambda
 #
-# Each platform's default function is defined in the platforms folder. These are copied into the source folder as index.js
+# Each platform's default function is defined in the platforms folder. These are copied into the source folder
 # and deployed onto each platform accordingly. Developers should write their function in the function.js file. 
 # All source files should be in the src folder and dependencies defined in package.json. 
 # Node Modules must be installed in tools/node_modules. This folder will be deployed with your function.
@@ -22,8 +22,9 @@
 cd "$(dirname "$0")"
 
 function=`cat ./config.json | jq '.functionName' | tr -d '"'`
-functionApp=`cat ./config.json | jq '.azureFunctionApp' | tr -d '"'`
 lambdaRole=`cat ./config.json | jq '.lambdaRoleARN' | tr -d '"'`
+lambdaSubnets=`cat ./config.json | jq '.lambdaSubnets' | tr -d '"'`
+lambdaSecurityGroups=`cat ./config.json | jq '.lambdaSecurityGroups' | tr -d '"'`
 
 echo
 echo Deploying $function....
@@ -52,7 +53,8 @@ then
 	cd target
 	aws lambda create-function --function-name $function --runtime java8 --role $lambdaRole --timeout 900 --handler lambda.Hello::handleRequest --zip-file fileb://lambda_test-1.0-SNAPSHOT.jar
 	aws lambda update-function-code --function-name $function --zip-file fileb://lambda_test-1.0-SNAPSHOT.jar
-	aws lambda update-function-configuration --function-name $function --memory-size $memory --runtime java8
+	aws lambda update-function-configuration --function-name $function --memory-size $memory --runtime java8 \
+	--vpc-config SubnetIds=[$lambdaSubnets],SecurityGroupIds=[$lambdaSecurityGroups]
 	cd ..
 	cd tools
 fi
@@ -63,7 +65,18 @@ then
 	echo
 	echo "----- Deploying onto IBM Cloud Functions -----"
 	echo
-	echo "Java FaaS Inspector does not support IBM Cloud Functions..."
+	
+	echo "Building jar with Maven..."
+	mvn clean -f "../pom.xml"
+	mvn verify -f "../pom.xml"
+	
+	# Submit jar to AWS Lambda.
+	cd ..
+	cd target
+	ibmcloud fn action update $function --kind java --memory $memory --main ibm.Hello lambda_test-1.0-SNAPSHOT.jar
+	cd ..
+	cd tools
+
 fi
 
 # Deploy onto Azure Functions
