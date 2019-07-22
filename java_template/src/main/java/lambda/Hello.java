@@ -4,7 +4,8 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import faasinspector.Inspector;
 import java.util.HashMap;
-import java.util.Random;
+import java.util.ArrayList;
+import shared.calcThread;
 
 /**
  * uwt.lambda_test::handleRequest
@@ -34,94 +35,30 @@ public class Hello implements RequestHandler<Request, HashMap<String, Object>> {
         int loops = request.getLoops();
         int arraySize = request.getArraySize();
 
+        inspector.addAttribute("threads", threads);
+        inspector.addAttribute("calcs", calcs);
+        inspector.addAttribute("loops", loops);
+        inspector.addAttribute("sleep", sleep);
+        inspector.addAttribute("arraySize", arraySize);
+
         ArrayList<Thread> threadList = new ArrayList<>();
-        
         //Create threads that will do math.
         for (int i = 0; i < threads; i++) {
-            Thread t = new Thread(new calcThread(calcs, sleep, loops, arraySize));
+            Thread t = new Thread(new calcThread(calcs, sleep, loops, arraySize, inspector, i));
+            threadList.add(t);
             t.start();
         }
 
         //Using this thread, wait for threads to finish.
         for (Thread t : threadList) {
-            t.join();
+            try {
+                t.join();
+            } catch (Exception e) {
+                inspector.addAttribute("ERROR", e.getStackTrace());
+            }
         }
-        
+
         inspector.inspectCPUDelta();
         return inspector.finish();
-    }
-
-    /**
-     * Threads that does all of the math.
-     */
-    private class calcThread implements Runnable {
-
-        private final int calcs;
-        private final int sleep;
-        private final int loops;
-        private final int arraySize;
-        
-        long[] operand_a;
-        long[] operand_b;
-        long[] operand_c;
-        
-        private long lastCalc = 0;
-        
-        //Set seed so random always returns the same set of values.
-        Random rand = new Random(42);
-
-        private calcThread(int calcs, int sleep, int loops, int arraySize) {
-            this.calcs = calcs;
-            this.sleep = sleep;
-            this.loops = loops;
-            this.arraySize = arraySize;
-            
-            this.operand_a = new long[arraySize];
-            this.operand_b = new long[arraySize];
-            this.operand_c = new long[arraySize];
-        }
-
-        @Override
-        public void run() {
-            
-            if (loops > 0) {
-                for (int i = 0; i < loops; i++) {
-                    lastCalc = (long) randomMath(calcs);
-                    if (sleep > 0) {
-                        try {
-                            Thread.sleep(sleep);
-                        } catch (InterruptedException ie) {
-                            System.out.println("Sleep was interrupted - calc mode...");
-                        }
-                    }   
-                }
-            } else {
-                try {
-                    Thread.sleep(sleep);
-                } catch (InterruptedException ie) {
-                    System.out.println("Sleep was interrupted - no calc mode...");
-                }
-            }
-        }
-
-        private double randomMath(int calcs) {
-            // By not reusing the same variables in the calc, this should prevent
-            // compiler optimization... Also each math operation should operate
-            // on between operands in different memory locations.
-            long mult;
-            double div1 = 0;
-
-            for (int i = 0; i < calcs; i++) {
-                // By not using sequential locations in the array, we should 
-                // reduce memory lookup efficiency
-                int j = rand.nextInt(arraySize);
-                operand_a[j] = rand.nextInt(99999);
-                operand_b[j] = rand.nextInt(99999);
-                operand_c[j] = rand.nextInt(99999);
-                mult = operand_a[j] * operand_b[j];
-                div1 = (double) mult / (double) operand_c[j];
-            }
-            return div1;
-        }
     }
 }
