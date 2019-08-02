@@ -5,7 +5,7 @@ import java.util.Random;
 import faasinspector.Inspector;
 
 /**
- * Threads that does all of the math.
+ * A thread that does all of the math.
  */
 public class calcThread implements Runnable {
 
@@ -25,6 +25,16 @@ public class calcThread implements Runnable {
     //Set seed so random always returns the same set of values.
     Random rand = new Random(42);
 
+    /**
+     * A thread to do math.
+     * 
+     * @param calcs Number of calcs to do ever loop.
+     * @param sleep Amount of time in ms to sleep every loop.
+     * @param loops The number of loops to do.
+     * @param arraySize The size of arrays to create.
+     * @param inspector The inspector object (used to report final calculation.)
+     * @param threadID The index of the thread.
+     */
     public calcThread(int calcs, int sleep, int loops, int arraySize, Inspector inspector, int threadID) {
         this.calcs = calcs;
         this.sleep = sleep;
@@ -40,6 +50,8 @@ public class calcThread implements Runnable {
 
     @Override
     public void run() {
+
+        inspector.addAttribute("finalCalc" + threadID, 0);
         
         if (loops > 0) {
             for (int i = 0; i < loops; i++) {

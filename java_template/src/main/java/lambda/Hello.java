@@ -27,7 +27,6 @@ public class Hello implements RequestHandler<Request, HashMap<String, Object>> {
         //Collect data
         Inspector inspector = new Inspector();
         inspector.inspectAll();
-        inspector.addTimeStamp("frameworkRuntime");
         
         int threads = request.getThreads();
         int calcs = request.getCalcs();
@@ -35,30 +34,40 @@ public class Hello implements RequestHandler<Request, HashMap<String, Object>> {
         int loops = request.getLoops();
         int arraySize = request.getArraySize();
 
+        //ArrayList<Thread> threadList = new ArrayList<>();
+        //Create threads that will do math.
+        //for (int i = 0; i < threads; i++) {
+        //    Thread t = new Thread(new calcThread(calcs, sleep, loops, arraySize, inspector, i));
+        //    threadList.add(t);
+        //    t.start();
+        //}
+
+        if (threads == 2) {
+            Thread t = new Thread(new calcThread((int)(((double) calcs) * 0.33), sleep, loops, arraySize, inspector, 1));
+            calcThread calculator = new calcThread((int)(((double) calcs) * 0.66), sleep, loops, arraySize, inspector, 0);
+            t.start();
+            calculator.run();
+        } else {
+            calcThread calculator = new calcThread(calcs, sleep, loops, arraySize, inspector, 0);
+            calculator.run();
+        }
+
+        //Using this thread, wait for threads to finish.
+        //for (Thread t : threadList) {
+        //    try {
+        //        t.join();
+        //    } catch (Exception e) {
+        //        inspector.addAttribute("ERROR", e.getStackTrace());
+        //    }
+        //}
+
         inspector.addAttribute("threads", threads);
         inspector.addAttribute("calcs", calcs);
         inspector.addAttribute("loops", loops);
         inspector.addAttribute("sleep", sleep);
         inspector.addAttribute("arraySize", arraySize);
 
-        ArrayList<Thread> threadList = new ArrayList<>();
-        //Create threads that will do math.
-        for (int i = 0; i < threads; i++) {
-            Thread t = new Thread(new calcThread(calcs, sleep, loops, arraySize, inspector, i));
-            threadList.add(t);
-            t.start();
-        }
-
-        //Using this thread, wait for threads to finish.
-        for (Thread t : threadList) {
-            try {
-                t.join();
-            } catch (Exception e) {
-                inspector.addAttribute("ERROR", e.getStackTrace());
-            }
-        }
-
-        inspector.inspectCPUDelta();
+        inspector.inspectAllDelta();
         return inspector.finish();
     }
 }
