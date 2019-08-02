@@ -62,7 +62,7 @@ public class Hello {
         inspector.addAttribute("arraySize", arraySize);
         
         //Calculate CPU deltas.
-        inspector.inspectAllDelta();
+        inspector.inspectAllDeltas();
 
         //Since IBM does not support an official vmID attribute, just set it to vmuptime.
         inspector.addAttribute("vmID", inspector.getAttribute("vmuptime"));

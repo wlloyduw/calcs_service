@@ -67,7 +67,7 @@ public class Hello implements RequestHandler<Request, HashMap<String, Object>> {
         inspector.addAttribute("sleep", sleep);
         inspector.addAttribute("arraySize", arraySize);
 
-        inspector.inspectAllDelta();
+        inspector.inspectAllDeltas();
         return inspector.finish();
     }
 }
