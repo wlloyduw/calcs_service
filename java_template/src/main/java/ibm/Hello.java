@@ -63,9 +63,6 @@ public class Hello {
         
         //Calculate CPU deltas.
         inspector.inspectAllDeltas();
-
-        //Since IBM does not support an official vmID attribute, just set it to vmuptime.
-        inspector.addAttribute("vmID", inspector.getAttribute("vmuptime"));
         
         //Convert Inspector Hashmap to JsonObject
         JsonObject output = new JsonObject();
